@@ -1,1 +1,8 @@
 /* Stylesheet by Calla Little, 2016 */
+
+#map {
+
+	margin: auto;
+	height: 800px;
+	width: 800px;
+}
