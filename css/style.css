@@ -4,5 +4,23 @@
 
 	margin: auto;
 	height: 820px;
-	width: 1400px;
+	width: 80%;
+	display: inline-block;
 }
+
+#panel {
+
+	width: 16%;
+	padding: 20px;
+	display: inline-block;
+	vertical-align: top;
+}
+
+.leaflet-popup-content-wrapper {
+	background-color: #4E7EC5;
+}
+
+.leaflet-popup-tip {
+	background-color: #4E7EC5;
+}
+
