@@ -36,7 +36,7 @@ function createPropSymbols(data, years) {
 		pointToLayer: function(feature, latlng) {
 			
 			
-			var attribute = years[2];
+			var attribute = years[0];
 
 			var atValue = Number(feature.properties[attribute]);
 			markerStyle.radius = calcRadius(atValue);
@@ -86,7 +86,56 @@ function createSequenceControls(years) {
 	$('#slider').append('<button class="skip" id="reverse">Reverse');
 	$('#slider').append('<button class="skip" id="forward"><img src="img/skip.png" height="8">');
 
+	$('.skip').click(function() {
 
+		var index = $('.range-slider').val();
+
+		if($(this).attr('id') == 'forward') {
+			index++;
+			index = index > 6 ? 0 : index;
+		} 
+		else if($(this).attr('id') == 'reverse') {
+			index--;
+			index = index < 0 ? 6 : index;
+		};
+
+		$('.range-slider').val(index);
+		console.log(index);
+		updatePropSymbols(years[index]);
+	});
+
+
+	$('.range-slider').on('input', function() {
+
+		var index = $(this).val();
+		updatePropSymbols(years[index]);
+
+		console.log(index);
+
+	});
+
+
+};
+
+
+function updatePropSymbols(year) {
+
+	map.eachLayer(function(layer) {
+		if(layer.feature && layer.feature.properties[year]) {
+
+			var props = layer.feature.properties;
+
+			var radius = calcRadius(props[year]);
+			layer.setRadius(radius);
+
+			var popUp = '<p><b><center>' + props.City + '<br></center> ';
+			popUp += '<p>' + year + ':</b> ' + props[year] + '%';
+
+			layer.bindPopup(popUp, {
+				offset: new L.Point(0, -radius)
+			});
+		};
+	});
 };
 
 //get the data for the map
