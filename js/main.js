@@ -18,7 +18,7 @@ function parseYears(data) {
 		years.push(attribute);
 	}
 
-	return years.slice(0, 7);
+	return years;
 };
 
 //create proportional symbols
@@ -57,7 +57,9 @@ function createPropSymbols(data, years) {
 					this.closePopup();
 				},
 				click: function() {
-					$('#panel').html(popUp);
+					//$('#panel').html(popUp);
+					this.openPopup();
+
 				} 
 			})
 
@@ -86,22 +88,57 @@ function createSequenceControls(years) {
 	$('#slider').append('<button class="skip" id="reverse">Reverse');
 	$('#slider').append('<button class="skip" id="forward"><img src="img/skip.png" height="8">');
 
-	$('.skip').click(function() {
+	var currentAttribute = 'percentage';
 
+	var updateSliderIndex = function(flag, start, end) {
+
+		console.log(start);
+		console.log(end);
 		var index = $('.range-slider').val();
 
-		if($(this).attr('id') == 'forward') {
+		if(flag == 'forward') {
 			index++;
-			index = index > 6 ? 0 : index;
+			index = index > end ? start : index;
 		} 
-		else if($(this).attr('id') == 'reverse') {
+		else if(flag == 'reverse') {
 			index--;
-			index = index < 0 ? 6 : index;
+			index = index < start ? end : index;
 		};
 
 		$('.range-slider').val(index);
-		console.log(index);
-		updatePropSymbols(years[index]);
+
+		return index;
+	};
+
+	$('.skip').click(function() {
+
+		var flag = $(this).attr('id');
+		var updatedIndex;
+
+		if(flag != currentAttribute) {
+			if(flag == 'percentage') {
+				currentAttribute == flag;
+				$('.range-slider').val(0);
+			}
+			else {
+				currentAttribute == flag;
+				$('.range-slider').val() = 8);
+			};
+		};
+
+		if ($('#selector').val() == 'percentage') {
+			updatedIndex = updateSliderIndex(flag, 0, 6);
+			//console.log(updatedIndex);
+			
+		}
+		else if ($('#selector').val() == 'population') {
+			updatedIndex = updateSliderIndex(flag, 8, 13);
+			//console.log(updatedIndex);
+			
+		}; 
+
+
+		updatePropSymbols(years[updatedIndex]);
 	});
 
 
@@ -110,7 +147,6 @@ function createSequenceControls(years) {
 		var index = $(this).val();
 		updatePropSymbols(years[index]);
 
-		console.log(index);
 
 	});
 
@@ -141,7 +177,7 @@ function updatePropSymbols(year) {
 //get the data for the map
 function getData(map) {
 
-	$.ajax('data/PovertyRates08-14.geojson', {
+	$.ajax('data/PovertyRates&Pop08-14.geojson', {
 		dataType: 'json',
 		success: function(response) {
 
