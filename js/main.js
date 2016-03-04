@@ -2,6 +2,7 @@
 
 //create the map and set initial properties
 var map = L.map('map', {minZoom: 5}).setView([39, -97], 5);
+var currentAttribute = 'percentage';
 
 //get the tileset
 var CartoDB_DarkMatter = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
@@ -10,7 +11,7 @@ var CartoDB_DarkMatter = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/
 	maxZoom: 19
 }).addTo(map);
 
-function parseYears(data) {
+function parsePercentage(data) {
 
 	var years = [];
 
@@ -18,7 +19,18 @@ function parseYears(data) {
 		years.push(attribute);
 	}
 
-	return years;
+	return years.slice(0,7);
+};
+
+function parsePopulation(data) {
+
+	var years = [];
+
+	for(var attribute in data.features[0].properties) {
+		years.push(attribute);
+	}
+
+	return years.slice(8);
 };
 
 //create proportional symbols
@@ -74,7 +86,7 @@ function calcRadius(atValue) {
 	return Math.sqrt((atValue * scaleFactor)/(Math.PI * .9 ));
 }
 
-function createSequenceControls(years) {
+function createSequenceControls(perYears, popYears) {
 
 	$('#slider').append('<input class="range-slider" type="range">' );
 
@@ -88,67 +100,65 @@ function createSequenceControls(years) {
 	$('#slider').append('<button class="skip" id="reverse">Reverse');
 	$('#slider').append('<button class="skip" id="forward"><img src="img/skip.png" height="8">');
 
-	var currentAttribute = 'percentage';
-
-	var updateSliderIndex = function(flag, start, end) {
-
-		console.log(start);
-		console.log(end);
-		var index = $('.range-slider').val();
-
-		if(flag == 'forward') {
-			index++;
-			index = index > end ? start : index;
-		} 
-		else if(flag == 'reverse') {
-			index--;
-			index = index < start ? end : index;
-		};
-
-		$('.range-slider').val(index);
-
-		return index;
-	};
+	
 
 	$('.skip').click(function() {
 
-		var flag = $(this).attr('id');
-		var updatedIndex;
+		var index = $('.range-slider').val();
 
-		if(flag != currentAttribute) {
-			if(flag == 'percentage') {
-				currentAttribute == flag;
-				$('.range-slider').val(0);
-			}
-			else {
-				currentAttribute == flag;
-				$('.range-slider').val() = 8);
-			};
+		if($(this).attr('id') == 'forward') {
+			index++;
+			index = index > 6 ? 0 : index;
+		} 
+		else if($(this).attr('id') == 'reverse') {
+			index--;
+			index = index < 0 ? 6 : index;
 		};
 
-		if ($('#selector').val() == 'percentage') {
-			updatedIndex = updateSliderIndex(flag, 0, 6);
-			//console.log(updatedIndex);
-			
-		}
-		else if ($('#selector').val() == 'population') {
-			updatedIndex = updateSliderIndex(flag, 8, 13);
-			//console.log(updatedIndex);
-			
-		}; 
-
-
-		updatePropSymbols(years[updatedIndex]);
+		$('.range-slider').val(index);
+		console.log(index);
+		updatePropSymbols(perYears[index]);
 	});
 
 
 	$('.range-slider').on('input', function() {
 
 		var index = $(this).val();
-		updatePropSymbols(years[index]);
+		updatePropSymbols(perYears[index]);
 
 
 	});
+
+	$('#selector').click(function() {
+		var mappedAttribute = $('#selector').val();
+		console.log($('#selector').val());
+	});
+
+
+};
+
+
+function updatePropSymbols(year) {
+
+	map.eachLayer(function(layer) {
+		if(layer.feature && layer.feature.properties[year]) {
+
+			var props = layer.feature.properties;
+
+			var radius = calcRadius(props[year]);
+			layer.setRadius(radius);
+
+			var popUp = '<p><b><center>' + props.City + '<br></center> ';
+			popUp += '<p>' + year + ':</b> ' + props[year] + '%';
+
+			layer.bindPopup(popUp, {
+				offset: new L.Point(0, -radius)
+			});
+		};
+	});
+
+
+	
 
 
 };
@@ -174,20 +184,23 @@ function updatePropSymbols(year) {
 	});
 };
 
+
+
 //get the data for the map
-function getData(map) {
+function getData(mappedAttribute) {
 
 	$.ajax('data/PovertyRates&Pop08-14.geojson', {
 		dataType: 'json',
 		success: function(response) {
 
-			var dataYears = parseYears(response);
-			createPropSymbols(response, dataYears) 
-			createSequenceControls(dataYears);
+			var percentYears = parsePercentage(response);
+			var popYears = parsePopulation(response);
+			createPropSymbols(response, percentYears); 
+			createSequenceControls(percentYears, popYears);
 		}
 	});
 
 };
 
 //intitialize the document
-$(document).ready(getData);
+$(document).ready(getData('percentage'));
