@@ -183,11 +183,6 @@ function updatePropSymbols(year, percentArrayYear) {
 
 			var props = layer.feature.properties;
 			var radius;
-			// console.log(props);
-			// console.log(year);
-			// console.log(percentArrayYear);
-			// console.log(props[year]);
-			// console.log(props[percentArrayYear]);
 
 			//pass percentage array if population is being mapped
 			if(dataValueIndex > 0) {
@@ -197,8 +192,9 @@ function updatePropSymbols(year, percentArrayYear) {
 				radius = calcRadius(props[year], 1);
 			};
 			
-			console.log(radius);
+			//update symbol properties
 			layer.setRadius(radius);
+			layer.setStyle({fillColor: 'purple'})
 
 			//bind appropriate popup
 			var popUp = '<p><b><center>' + props.City + '<br></center> ';
@@ -217,47 +213,120 @@ function updatePropSymbols(year, percentArrayYear) {
 
 };
 
-function filter(percentYears, popYears) {
+//calculate the radius appropriate for the difference between years
+function calcDifferenceRadius(difference) {
 
+	var scaleFactor;
+
+	//check if population in poverty needs to be calculated
+	if(dataValueIndex > 0) {
+		//percentage = percentage/100;
+		scaleFactor = .01;
+	} 
+	else {
+		scaleFactor = 80;
+	};
 	
-	var selectedFromYear = 0;
-	$('#select-from-year').change(function() {
-		//console.log($('#select-from-year').val());
-		selectedFromYear = $('#select-from-year').val();
-		//console.log(selectedFromYear);
-	});
-
-	console.log(selectedFromYear); 
-
-	var selectedToYear = 1;
-	$('#select-to-year').change(function() {
-		selectedToYear = $('#select-to-year').val();
-		console.log(selectedToYear);
-	});
-
-	console.log(selectedToYear); 
-
-	var fromProperty = percentYears[selectedFromYear];
-	var toProperty = percentYears[selectedToYear];
-
-	/*$('#submit').click(function() {
-
-		if(dataValueIndex < 1) {
-			map.eachLayer(function(layer) {
-				if(layer.feature && layer.feature.properties[fromProperty] && layer.feature.properties[toProperty]) {
-					var features = layer.feature.properties;
-					console.log(features);
-					console.log(features[fromProperty]);
-					console.log(features[toProperty]);
-
-					
-				
-				};
-			});
-		};
-	
-	});*/
+	return Math.sqrt((difference  * scaleFactor)/(Math.PI * .6 ));
 };
+
+//calculate the change between user input years
+function calculate(percentYears, popYears) {
+
+	//check for user input
+	$('.calculate-selector').change(function() {
+		var selectedFromYear = $('#select-from-year').val();
+		var selectedToYear = $('#select-to-year').val();
+
+		var fromPerc = percentYears[selectedFromYear];
+		var toPerc = percentYears[selectedToYear];
+
+		//wait for user to submit their selection
+		$('#submit').click(function() {
+
+			//check which attribute is being mapped
+			if(dataValueIndex < 1) {
+				
+				map.eachLayer(function(layer) {
+
+					//iterate through each feature
+					if(layer.feature && layer.feature.properties[fromPerc] && layer.feature.properties[toPerc]) {
+
+						var features = layer.feature.properties;
+
+						//calculate the change between years
+						var difference = features[toPerc] - features[fromPerc];
+						
+						//apply appropriate symbol properties
+						var calculatedRadius = calcDifferenceRadius(Math.abs(difference));
+						
+						layer.setRadius(calculatedRadius);
+
+						var popUp = '<p><b><center>' + features.City + '<br></center> ';
+
+						if(difference < 0) {
+							layer.setStyle({fillColor: 'green'});
+							popUp += '<p>From ' + fromPerc + ' to ' + toPerc + ': ' + Math.abs(difference) + '% decrease';
+						} 
+						else {
+							layer.setStyle({fillColor: 'orange'});
+							popUp += '<p>From ' + fromPerc + ' to ' + toPerc + ': ' + Math.abs(difference) + '% increase';
+						};
+
+						//update popup
+						layer.bindPopup(popUp, {
+							offset: new L.Point(0, -calculatedRadius)
+						});
+
+					};
+				});
+			}
+			else {
+
+				var fromPop = popYears[selectedFromYear];
+				var toPop = popYears[selectedToYear];
+
+				//iterate through each feature
+				map.eachLayer(function(layer) {
+					if(layer.feature && layer.feature.properties[fromPop] && layer.feature.properties[toPop]) {
+
+						var features = layer.feature.properties;
+
+						//calculate the change between years
+						console.log(features[toPop] * (features[toPerc]/100));
+						console.log(features[fromPop] * (features[fromPerc]/100));
+
+						var difference = (features[toPop] * (features[toPerc]/100)) - ( features[fromPop] * (features[fromPerc]/100));
+
+						var calculatedRadius = calcDifferenceRadius(Math.abs(difference));
+						
+						//apply appropriate symbol properties
+						layer.setRadius(calculatedRadius);
+
+						var popUp = '<p><b><center>' + features.City + '<br></center> ';
+
+						if(difference < 0) {
+							layer.setStyle({fillColor: 'green'});
+							popUp += '<p>From ' + fromPop.substring(3) + ' to ' + toPop.substring(3) + ': ' + Math.abs(difference) + ' fewer people';
+						} 
+						else {
+							layer.setStyle({fillColor: 'orange'});
+							popUp += '<p>From ' + fromPop.substring(3) + ' to ' + toPop.substring(3) + ': ' + Math.abs(difference) + ' more people';
+						};
+
+						//update popup
+						layer.bindPopup(popUp, {
+							offset: new L.Point(0, -calculatedRadius)
+						});
+
+					};
+	
+				});
+			};
+		});
+	});
+};
+
 
 
 //get the data for the map
@@ -271,7 +340,7 @@ function getData() {
 			var popYears = parsePopulation(response);
 			createPropSymbols(response, percentYears); 
 			createSequenceControls(percentYears, popYears);
-			filter(percentYears, popYears);
+			calculate(percentYears, popYears);
 
 		}
 	});
