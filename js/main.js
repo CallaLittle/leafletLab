@@ -100,8 +100,24 @@ function createSequenceControls(perYears, popYears) {
 	$('#slider').append('<button class="skip" id="reverse">Reverse');
 	$('#slider').append('<button class="skip" id="forward"><img src="img/skip.png" height="8">');
 
-	
+	userInput(perYears, popYears);
+};
 
+function userInput(perYears, popYears) {
+
+	$('#selector').change(function() {
+		var mappedAttribute = $('#selector').val();
+		console.log($('#selector').val());
+		if(mappedAttribute == 'percentage') {
+			activateSlider(perYears);
+		}
+		else if(mappedAttribute == 'population') {
+			activateSlider(popYears);
+		}
+	});
+};
+
+function activateSlider(perYears) {
 	$('.skip').click(function() {
 
 		var index = $('.range-slider').val();
@@ -128,12 +144,6 @@ function createSequenceControls(perYears, popYears) {
 
 
 	});
-
-	$('#selector').click(function() {
-		var mappedAttribute = $('#selector').val();
-		console.log($('#selector').val());
-	});
-
 
 };
 
