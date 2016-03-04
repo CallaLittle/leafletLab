@@ -1,16 +1,19 @@
 /* Calla Little, 2016 */
 
-//create the map and set initial properties
-var map = L.map('map', {minZoom: 5}).setView([39, -97], 5);
-var dataValueIndex = 0;
+//global variables
+var dataValueIndex = 0; //tracks attribute being mapped
 
-//get the tileset
+var map = L.map('map', {minZoom: 5}).setView([39, -97], 5); //map intialization
+
+//tileset
 var CartoDB_DarkMatter = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
 	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
 	subdomains: 'abcd',
 	maxZoom: 19
 }).addTo(map);
 
+
+//parse percentage index array
 function parsePercentage(data) {
 
 	var years = [];
@@ -22,6 +25,7 @@ function parsePercentage(data) {
 	return years.slice(0,7);
 };
 
+//parse population index array
 function parsePopulation(data) {
 
 	var years = [];
@@ -33,9 +37,29 @@ function parsePopulation(data) {
 	return years.slice(8);
 };
 
-//create proportional symbols
+
+//determine the appropriate radius
+function calcRadius(atValue, percentage) {
+
+	var scaleFactor;
+
+	//check if population in poverty needs to be calculated
+	if(dataValueIndex > 0) {
+		percentage = percentage/100;
+		scaleFactor = .002;
+	} 
+	else {
+		scaleFactor = 40;
+	};
+	
+	return Math.sqrt((atValue * percentage * scaleFactor)/(Math.PI * .6 ));
+};
+
+
+//create intial proportional symbols
 function createPropSymbols(data, years) {
 
+	//prop symbol style
 	var markerStyle = {
 		fillColor: 'purple',
 		color: 'purple',
@@ -44,6 +68,7 @@ function createPropSymbols(data, years) {
 		fillOpacity: .3
 	};
 
+	//convert leaflet markers to circles
 	L.geoJson(data, {
 		pointToLayer: function(feature, latlng) {
 			
@@ -51,8 +76,9 @@ function createPropSymbols(data, years) {
 			var attribute = years[0];
 
 			var atValue = Number(feature.properties[attribute]);
-			markerStyle.radius = calcRadius(atValue);
+			markerStyle.radius = calcRadius(atValue, 1);
 
+			//create popup
 			var popUp = '<p><b><center>' + feature.properties.City + '<br></center> ';
 			popUp += '<p>' + attribute + ':</b> ' + feature.properties[attribute] + '%';
 
@@ -61,6 +87,7 @@ function createPropSymbols(data, years) {
 				closeButton: false
 			});
 
+			//set popup features
 			layer.on({
 				mouseover: function() {
 					this.openPopup();
@@ -80,16 +107,11 @@ function createPropSymbols(data, years) {
 	}).addTo(map);
 };
 
-//determine the appropriate radius
-function calcRadius(atValue) {
 
-	var scaleFactor = dataValueIndex > 0 ? .001 : 40;
-	//scaleFactor = 40;
-	return Math.sqrt((atValue * scaleFactor)/(Math.PI * .9 ));
-}
-
+//create the slider bar
 function createSequenceControls(perYears, popYears) {
 
+	//create the slider bar 
 	$('#slider').append('<input class="range-slider" type="range">' );
 
 	$('.range-slider').attr({
@@ -102,8 +124,10 @@ function createSequenceControls(perYears, popYears) {
 	$('#slider').append('<button class="skip" id="reverse">Reverse');
 	$('#slider').append('<button class="skip" id="forward"><img src="img/skip.png" height="8">');
 
+	//put percentage index array and population index array into an array
 	var dataArray = [perYears, popYears];
 
+	//set the slider bar year index when user clicks
 	$('.skip').click(function() {
 
 		var index = $('.range-slider').val();
@@ -117,42 +141,72 @@ function createSequenceControls(perYears, popYears) {
 			index = index < 0 ? 6 : index;
 		};
 
+		//update the slider and the prop symbols
 		$('.range-slider').val(index);
 		console.log(index);
-		updatePropSymbols(dataArray[dataValueIndex][index]);
+		//pass the current attribute index array with the year index
+		updatePropSymbols(dataArray[dataValueIndex][index], dataArray[0][index]);
 	});
 
-
+	//update the year index and slider if user drags slider
 	$('.range-slider').on('input', function() {
 
 		var index = $(this).val();
-		updatePropSymbols(dataArray[dataValueIndex][index]);
+
+		//pass the current attribute index array with the year index
+		updatePropSymbols(dataArray[dataValueIndex][index], dataArray[0][index]);
 
 
 	});
 
+	//wait for a change in the dropdown attribute menu
 	$('#selector').change(function() {
-		$('.range-slider').val(0);
-		dataValueIndex++;
+		$('.range-slider').val(0); //set the slider value back to 0
+
+		//update the attribute index
+		dataValueIndex++; 
 		dataValueIndex = dataValueIndex > 1 ? 0 : dataValueIndex;
-		updatePropSymbols(dataArray[dataValueIndex][0]);
+
+		//update the proportional symbols at year 2008 with the correct attribute
+		updatePropSymbols(dataArray[dataValueIndex][0], dataArray[0][0]);
 	});
 
 };
 
 
-function updatePropSymbols(year) {
+//update the prop symbols
+function updatePropSymbols(year, percentArrayYear) {
 
 	map.eachLayer(function(layer) {
 		if(layer.feature && layer.feature.properties[year]) {
 
 			var props = layer.feature.properties;
+			var radius;
+			console.log(props);
+			console.log(year);
+			console.log(percentArrayYear);
+			console.log(props[year]);
+			console.log(props[percentArrayYear]);
 
-			var radius = calcRadius(props[year]);
+			//pass percentage array if population is being mapped
+			if(dataValueIndex > 0) {
+				radius = calcRadius(props[year], props[percentArrayYear]);
+			}
+			else {
+				radius = calcRadius(props[year], 1);
+			};
+			
+			console.log(radius);
 			layer.setRadius(radius);
 
+			//bind appropriate popup
 			var popUp = '<p><b><center>' + props.City + '<br></center> ';
-			popUp += '<p>' + year + ':</b> ' + props[year] + '%';
+			if(dataValueIndex < 1) {
+				popUp += '<p>' + year + ':</b> ' + props[year] + '%';
+			}
+			else {
+				popUp += '<p>' + year.substring(3) + ':</b> ' + props[year] + ' people';
+			}
 
 			layer.bindPopup(popUp, {
 				offset: new L.Point(0, -radius)
@@ -165,28 +219,6 @@ function updatePropSymbols(year) {
 
 
 };
-
-
-function updatePropSymbols(year) {
-
-	map.eachLayer(function(layer) {
-		if(layer.feature && layer.feature.properties[year]) {
-
-			var props = layer.feature.properties;
-
-			var radius = calcRadius(props[year]);
-			layer.setRadius(radius);
-
-			var popUp = '<p><b><center>' + props.City + '<br></center> ';
-			popUp += '<p>' + year + ':</b> ' + props[year] + '%';
-
-			layer.bindPopup(popUp, {
-				offset: new L.Point(0, -radius)
-			});
-		};
-	});
-};
-
 
 
 //get the data for the map
