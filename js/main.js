@@ -53,6 +53,7 @@ function calcRadius(atValue, percentage) {
 	};
 	
 	return Math.sqrt((atValue * percentage * scaleFactor)/(Math.PI * .6 ));
+	//return 1.0083 * Math.pow((atValue * percentage)/7.1,.5716) * 35.2; 
 };
 
 
@@ -182,11 +183,11 @@ function updatePropSymbols(year, percentArrayYear) {
 
 			var props = layer.feature.properties;
 			var radius;
-			console.log(props);
-			console.log(year);
-			console.log(percentArrayYear);
-			console.log(props[year]);
-			console.log(props[percentArrayYear]);
+			// console.log(props);
+			// console.log(year);
+			// console.log(percentArrayYear);
+			// console.log(props[year]);
+			// console.log(props[percentArrayYear]);
 
 			//pass percentage array if population is being mapped
 			if(dataValueIndex > 0) {
@@ -214,17 +215,55 @@ function updatePropSymbols(year, percentArrayYear) {
 		};
 	});
 
+};
+
+function filter(percentYears, popYears) {
 
 	
+	var selectedFromYear = 0;
+	$('#select-from-year').change(function() {
+		//console.log($('#select-from-year').val());
+		selectedFromYear = $('#select-from-year').val();
+		//console.log(selectedFromYear);
+	});
 
+	console.log(selectedFromYear); 
 
+	var selectedToYear = 1;
+	$('#select-to-year').change(function() {
+		selectedToYear = $('#select-to-year').val();
+		console.log(selectedToYear);
+	});
+
+	console.log(selectedToYear); 
+
+	var fromProperty = percentYears[selectedFromYear];
+	var toProperty = percentYears[selectedToYear];
+
+	/*$('#submit').click(function() {
+
+		if(dataValueIndex < 1) {
+			map.eachLayer(function(layer) {
+				if(layer.feature && layer.feature.properties[fromProperty] && layer.feature.properties[toProperty]) {
+					var features = layer.feature.properties;
+					console.log(features);
+					console.log(features[fromProperty]);
+					console.log(features[toProperty]);
+
+					
+				
+				};
+			});
+		};
+	
+	});*/
 };
 
 
 //get the data for the map
 function getData() {
 
-	$.ajax('data/PovertyRates&Pop08-14.geojson', {
+	$.ajax('data/PovertyRates&Pop08-14_formatted.geojson', {
 		dataType: 'json',
 		success: function(response) {
 
@@ -232,6 +271,7 @@ function getData() {
 			var popYears = parsePopulation(response);
 			createPropSymbols(response, percentYears); 
 			createSequenceControls(percentYears, popYears);
+			filter(percentYears, popYears);
 
 		}
 	});
