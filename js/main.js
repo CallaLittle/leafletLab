@@ -2,7 +2,7 @@
 
 //create the map and set initial properties
 var map = L.map('map', {minZoom: 5}).setView([39, -97], 5);
-var currentAttribute = 'percentage';
+var dataValueIndex = 0;
 
 //get the tileset
 var CartoDB_DarkMatter = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
@@ -82,7 +82,9 @@ function createPropSymbols(data, years) {
 
 //determine the appropriate radius
 function calcRadius(atValue) {
-	var scaleFactor = 40;
+
+	var scaleFactor = dataValueIndex > 0 ? .001 : 40;
+	//scaleFactor = 40;
 	return Math.sqrt((atValue * scaleFactor)/(Math.PI * .9 ));
 }
 
@@ -100,24 +102,8 @@ function createSequenceControls(perYears, popYears) {
 	$('#slider').append('<button class="skip" id="reverse">Reverse');
 	$('#slider').append('<button class="skip" id="forward"><img src="img/skip.png" height="8">');
 
-	userInput(perYears, popYears);
-};
+	var dataArray = [perYears, popYears];
 
-function userInput(perYears, popYears) {
-
-	$('#selector').change(function() {
-		var mappedAttribute = $('#selector').val();
-		console.log($('#selector').val());
-		if(mappedAttribute == 'percentage') {
-			activateSlider(perYears);
-		}
-		else if(mappedAttribute == 'population') {
-			activateSlider(popYears);
-		}
-	});
-};
-
-function activateSlider(perYears) {
 	$('.skip').click(function() {
 
 		var index = $('.range-slider').val();
@@ -133,16 +119,23 @@ function activateSlider(perYears) {
 
 		$('.range-slider').val(index);
 		console.log(index);
-		updatePropSymbols(perYears[index]);
+		updatePropSymbols(dataArray[dataValueIndex][index]);
 	});
 
 
 	$('.range-slider').on('input', function() {
 
 		var index = $(this).val();
-		updatePropSymbols(perYears[index]);
+		updatePropSymbols(dataArray[dataValueIndex][index]);
 
 
+	});
+
+	$('#selector').change(function() {
+		$('.range-slider').val(0);
+		dataValueIndex++;
+		dataValueIndex = dataValueIndex > 1 ? 0 : dataValueIndex;
+		updatePropSymbols(dataArray[dataValueIndex][0]);
 	});
 
 };
@@ -197,7 +190,7 @@ function updatePropSymbols(year) {
 
 
 //get the data for the map
-function getData(mappedAttribute) {
+function getData() {
 
 	$.ajax('data/PovertyRates&Pop08-14.geojson', {
 		dataType: 'json',
@@ -207,10 +200,11 @@ function getData(mappedAttribute) {
 			var popYears = parsePopulation(response);
 			createPropSymbols(response, percentYears); 
 			createSequenceControls(percentYears, popYears);
+
 		}
 	});
 
 };
 
 //intitialize the document
-$(document).ready(getData('percentage'));
+$(document).ready(getData());
