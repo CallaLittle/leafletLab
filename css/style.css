@@ -36,3 +36,29 @@
 .leaflet-popup-content p {
     color: #fff;
 }
+
+
+.sequence-control-container {
+    width: 250px;
+    height: 15px;
+    background-color: #333;
+    padding: 10px;
+    line-height: 7px;
+    text-align: center;
+    /*border: solid gray 1px; */
+}
+
+.range-slider {
+    width: 150px;
+    height: 10px;
+}
+
+.legend-control-container {
+    width: 250px;
+    height: 15px;
+    background-color: #333;
+    padding: 10px;
+    line-height: 7px;
+    text-align: center;
+    /*border: solid gray 1px; */
+}

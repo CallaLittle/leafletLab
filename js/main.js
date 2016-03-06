@@ -111,10 +111,32 @@ function createPropSymbols(data, years) {
 
 //create the slider bar
 function createSequenceControls(perYears, popYears) {
+	var SequenceControl = L.Control.extend({
+		options: {
+			position: 'bottomleft'
+		},
+
+		onAdd: function() {
+
+			var container = L.DomUtil.create('div', 'sequence-control-container');
+
+			$(container).append('<input class="range-slider" type="range">' );
+
+			$(container).append('<button class="skip" id="reverse">Reverse');
+			$(container).append('<button class="skip" id="forward"><img src="img/skip.png" height="8">');
+
+			$(container).on('mousedown dblclick', function(e) {
+				L.DomEvent.stopPropagation(e);
+			});
+
+
+			return container;
+		}
+	});
+
+	map.addControl(new SequenceControl());
 
 	//create the slider bar 
-	$('#slider').append('<input class="range-slider" type="range">' );
-
 	$('.range-slider').attr({
 		max: 6,
 		min: 0,
@@ -122,8 +144,6 @@ function createSequenceControls(perYears, popYears) {
 		step: 1
 	});
 
-	$('#slider').append('<button class="skip" id="reverse">Reverse');
-	$('#slider').append('<button class="skip" id="forward"><img src="img/skip.png" height="8">');
 
 	//put percentage index array and population index array into an array
 	var dataArray = [perYears, popYears];
@@ -179,9 +199,11 @@ function createSequenceControls(perYears, popYears) {
 function updatePropSymbols(year, percentArrayYear) {
 
 	map.eachLayer(function(layer) {
+		console.log(layer.feature);
 		if(layer.feature && layer.feature.properties[year]) {
 
 			var props = layer.feature.properties;
+			console.log(year);
 			var radius;
 
 			//pass percentage array if population is being mapped
@@ -327,6 +349,21 @@ function calculate(percentYears, popYears) {
 	});
 };
 
+function createLegend(attributes) {
+	var LegendControl = L.Control.Extend({
+		options: {
+			position: 'bottomleft'
+		},
+
+		onAdd: function() {
+			var container = L.DomUtil.create('div', 'legend-control-container');
+
+			return container;
+		}
+	});
+
+	map.addControl(new LegendControl);
+};
 
 
 //get the data for the map
