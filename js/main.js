@@ -199,7 +199,7 @@ function createSequenceControls(perYears, popYears) {
 function updatePropSymbols(year, percentArrayYear) {
 
 	map.eachLayer(function(layer) {
-		console.log(layer.feature);
+	
 		if(layer.feature && layer.feature.properties[year]) {
 
 			var props = layer.feature.properties;
@@ -209,11 +209,12 @@ function updatePropSymbols(year, percentArrayYear) {
 			//pass percentage array if population is being mapped
 			if(dataValueIndex > 0) {
 				radius = calcRadius(props[year], props[percentArrayYear]);
+				$('attLegend').html('<p>' + year);
 			}
 			else {
 				radius = calcRadius(props[year], 1);
 			};
-			
+
 			//update symbol properties
 			layer.setRadius(radius);
 			layer.setStyle({fillColor: 'purple'})
@@ -349,20 +350,22 @@ function calculate(percentYears, popYears) {
 	});
 };
 
-function createLegend(attributes) {
-	var LegendControl = L.Control.Extend({
+function createLegend(years) {
+	var LegendControl = L.Control.extend({
 		options: {
-			position: 'bottomleft'
+			position: 'bottomright'
 		},
 
 		onAdd: function() {
 			var container = L.DomUtil.create('div', 'legend-control-container');
 
+			$(container).append('<div id="attLegend">Percentage in Poverty ' + years);
+
 			return container;
 		}
 	});
 
-	map.addControl(new LegendControl);
+	map.addControl(new LegendControl());
 };
 
 
@@ -378,6 +381,7 @@ function getData() {
 			createPropSymbols(response, percentYears); 
 			createSequenceControls(percentYears, popYears);
 			calculate(percentYears, popYears);
+			createLegend('2008');
 
 		}
 	});
