@@ -3,7 +3,7 @@
 //global variables
 var dataValueIndex = 0; //tracks attribute being mapped
 
-var map = L.map('map', {minZoom: 5}).setView([39, -97], 5); //map intialization
+var map = L.map('map', {minZoom: 5}).setView([37.5, -96.75], 5); //map intialization
 
 //tileset
 var CartoDB_DarkMatter = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
@@ -83,12 +83,13 @@ function createPropSymbols(data, years) {
 			markerStyle.radius = calcRadius(atValue, 1);
 
 			//create popup
-			var popUp = '<p><b><center>' + feature.properties.City + '<br></center> ';
+			var popUp = '<h3>' + feature.properties.City + '</h3> ';
 			popUp += '<p>' + attribute + ':</b> ' + feature.properties[attribute] + '%';
 
 			var layer = L.circleMarker(latlng, markerStyle).bindPopup(popUp, {
 				offset: new L.Point(0, -markerStyle.radius),
 				closeButton: false
+				
 			});
 
 			//set popup features
@@ -116,7 +117,7 @@ function createPropSymbols(data, years) {
 function createSequenceControls(perYears, popYears) {
 	var SequenceControl = L.Control.extend({
 		options: {
-			position: 'bottomright'
+			position: 'bottomleft'
 		},
 
 		onAdd: function() {
@@ -225,12 +226,12 @@ function updatePropSymbols(year, percentArrayYear) {
 			$('.color-legend-control-container').remove();
 
 			//bind appropriate popup
-			var popUp = '<p><b><center>' + props.City + '<br></center> ';
+			var popUp = '<h3>' + props.City + '</h3> ';
 			if(dataValueIndex < 1) {
 				popUp += '<p>' + year + ':</b> ' + props[year] + '%';
 			}
 			else {
-				popUp += '<p>' + year.substring(3) + ':</b> ' + props[year] * (props[percentArrayYear]/100) + ' people';
+				popUp += '<p>' + year.substring(3) + ':</b> ' + (props[year] * (props[percentArrayYear]/100)).toFixed(0) + ' people';
 			}
 
 			layer.bindPopup(popUp, {
@@ -292,15 +293,15 @@ function calculate(percentYears, popYears) {
 						
 						layer.setRadius(calculatedRadius);
 
-						var popUp = '<p><b><center>' + features.City + '<br></center> ';
+						var popUp = '<h3>' + features.City + '</h3> ';
 
 						if(difference < 0) {
 							layer.setStyle({fillColor: '#368dce', color: '#368dce', fillOpacity: .5, opacity: .5});
-							popUp += '<p>From ' + fromPerc + ' to ' + toPerc + ': ' + Math.abs(difference) + '% decrease';
+							popUp += '<p>' + fromPerc + ' to ' + toPerc + ': ' + (Math.abs(difference)).toFixed(1) + '% decrease';
 						} 
 						else {
 							layer.setStyle({fillColor: '#fdae61', color: '#fdae61', fillOpacity: .35, opacity: .35});
-							popUp += '<p>From ' + fromPerc + ' to ' + toPerc + ': ' + Math.abs(difference) + '% increase';
+							popUp += '<p>' + fromPerc + ' to ' + toPerc + ': ' + (Math.abs(difference)).toFixed(1) + '% increase';
 						};
 
 						//update popup
@@ -327,15 +328,15 @@ function calculate(percentYears, popYears) {
 						//apply appropriate symbol properties
 						layer.setRadius(calculatedRadius);
 
-						var popUp = '<p><b><center>' + features.City + '<br></center> ';
+						var popUp = '<h3>' + features.City + '</h3> ';
 
 						if(difference < 0) {
 							layer.setStyle({fillColor: '#368dce', color: '#368dce', fillOpacity: .5, opacity: .5});
-							popUp += '<p>From ' + fromPop.substring(3) + ' to ' + toPop.substring(3) + ': ' + Math.abs(difference) + ' fewer people';
+							popUp += '<p>' + fromPop.substring(3) + ' to ' + toPop.substring(3) + ': ' + (Math.abs(difference)).toFixed(0) + ' people';
 						} 
 						else {
 							layer.setStyle({fillColor: '#fdae61', color: '#fdae61', fillOpacity: .35, opacity: .35});
-							popUp += '<p>From ' + fromPop.substring(3) + ' to ' + toPop.substring(3) + ': ' + Math.abs(difference) + ' more people';
+							popUp += '<p>' + fromPop.substring(3) + ' to ' + toPop.substring(3) + ': ' + (Math.abs(difference)).toFixed(0) + ' people';
 						};
 
 						//update popup
@@ -374,17 +375,21 @@ function calculate(percentYears, popYears) {
 function createColorLegend() {
 	var LegendControl = L.Control.extend({
 		options: {
-			position: 'bottomright'
+			position: 'bottomleft'
 		},
 
 		onAdd: function() {
 			var container = L.DomUtil.create('div', 'color-legend-control-container');
 
-			$(container).append('<div id="colorLegend">Colors ');
+			$(container).append('<div id="colorLegend">Direction of Change');
 
-			var svg = '<svg id="color-legend" width="250px" height="140px"><circle class="legend-circle" id="orangeColorCircle" fill="#fdae61" fill-opacity=".35" stroke-opacity=".35" stroke="#fdae61" cx="58" cy="60" r="10"/>';
+			var svg = '<svg id="color-legend" width="250px" height="40px"><circle class="legend-circle" id="orangeColorCircle" fill="#fdae61" fill-opacity=".35" stroke-opacity=".35" stroke="#fdae61" cx="45" cy="20" r="10"/>';
 
-	            svg += '<text id="orangeColorText" fill="white" x="58" y="60">Increase</text>';
+	            svg += '<text id="orangeColorText" fill="white" x="62" y="25">Increase</text>';
+
+	            svg+= '<circle class="legend-circle" id="blueColorCircle" fill="#368dce" fill-opacity=".5" stroke-opacity=".5" stroke="##368dce" cx="145" cy="20" r="10"/>';
+
+	            svg += '<text id="orangeColorText" fill="white" x="162" y="25">Decrease</text>';
 
 
             $(container).append(svg);
@@ -399,13 +404,13 @@ function createColorLegend() {
 function createLegend(years) {
 	var LegendControl = L.Control.extend({
 		options: {
-			position: 'bottomleft'
+			position: 'bottomright'
 		},
 
 		onAdd: function() {
 			var container = L.DomUtil.create('div', 'legend-control-container');
 
-			$(container).append('<div id="attLegend">Percentage in Poverty ' + years);
+			$(container).append('<div id="attLegend">Percentage of people below the poverty <p> line in ' + years);
 
 			var svg = '<svg id="attribute-legend" width="250px" height="140px">';
 
@@ -441,11 +446,11 @@ function updateLegend(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 	var percentValues = {};
 
 	if(dataValueIndex < 1 && toPercYear == null) {
-		$('#attLegend').html('Percentage in Poverty ' + fromPercYear);
+		$('#attLegend').html('Percentage of population below the poverty <p> line in ' + fromPercYear);
 		circleValues = calcMinMaxMean(fromPercYear);
 	}
 	else if(dataValueIndex > 0 && toPopYear == null) {
-		$('#attLegend').html('Population in Poverty ' + fromPopYear.substring(3));
+		$('#attLegend').html('Population below the poverty line in ' + fromPopYear.substring(3));
 		circleValues = calcMinMaxMean(fromPercYear, null, fromPopYear, null);
 		dataValueIndex = 0;
 		percentValues = calcMinMaxMean(fromPercYear);

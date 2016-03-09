@@ -7,6 +7,7 @@
 
 		<!--put your external stylesheet links here-->
 		<link rel="stylesheet" href="lib/leaflet/leaflet.css">
+		<link href="jquery-ui.css" rel="stylesheet">
 		<link rel="stylesheet" href="css/style.css">
 		<!--[if IE<9]>
 			<link rel="stylesheet" href="css/style.ie.css">
@@ -15,50 +16,59 @@
 
 	<body>
 		<!--put your initial page content here-->
+<!-- 		<div class-"header">
+			<h1>U.S. Poverty Levels</h1>
+		</div> -->
+		
+		<div id='panel'>
+			<div id="title"><h2>U.S. Poverty Levels</h2></div>
+			<div id='options'>
 
-		<div id="map"></div>
-		<div id='options'>
-			<div id='dropdown'>
-				<p>Select Variable: </p>
-				<div >
-					<select id='selector'>
-						<option value='percentage'>% in poverty</option>
-						<option value='population'># in poverty</option>
-					</select>
+				<div id='dropdown'>
+					<p>Select Variable: </p>
+					<div >
+						<select id='selector'>
+							<option value='percentage'>% in poverty</option>
+							<option value='population'># in poverty</option>
+						</select>
+					</div>
 				</div>
-			</div>
-			<div id='slider'></div>
-			<div>
-				<div id='filter-menu'>
-					<p>Select Years:</p>
-					<div><p>From To</p></div>
-						<div>
-							<select class='calculate-selector' id='select-from-year'>
-								<option value= undefined>    </option>
-								<option value= 0>2008</option>
-								<option value= 1>2009</option>
-								<option value= 2>2010</option>
-								<option value= 3>2011</option>
-								<option value= 4>2012</option>
-								<option value= 5>2013</option>
-								<!-- <option value='2014'>2014</option> -->
-							</select>
-							<select class='calculate-selector' id='select-to-year'>
-								<!-- <option value='2008'>2008</option> -->
-								<option value= undefined>    </option>
-								<option value= 1>2009</option>
-								<option value= 2>2010</option>
-								<option value= 3>2011</option>
-								<option value= 4>2012</option>
-								<option value= 5>2013</option>
-								<option value= 6>2014</option> 
-							</select>
-							<button class="button" id="submit">Submit</button>
-						</div>
+				<br>
+				<br>
+				<br>
+				<div>
+					<div id='filter-menu'>
+						<p>Select Years:</p>
+						<div><p>From              To</p></div>
+							<div>
+								<select class='calculate-selector' id='select-from-year'>
+									<option value= undefined>    </option>
+									<option value= 0>2008</option>
+									<option value= 1>2009</option>
+									<option value= 2>2010</option>
+									<option value= 3>2011</option>
+									<option value= 4>2012</option>
+									<option value= 5>2013</option>
+									<!-- <option value='2014'>2014</option> -->
+								</select>
+								<select class='calculate-selector' id='select-to-year'>
+									<!-- <option value='2008'>2008</option> -->
+									<option value= undefined>    </option>
+									<option value= 1>2009</option>
+									<option value= 2>2010</option>
+									<option value= 3>2011</option>
+									<option value= 4>2012</option>
+									<option value= 5>2013</option>
+									<option value= 6>2014</option> 
+								</select>
+								<button class="button" id="submit">Submit</button>
+							</div>
+					</div>
 				</div>
 			</div>
 		</div>
-		<div id='panel'></div>
+		<div id="map"></div>
+		
 
 			
 		<!--you can also use this space for internal scripts or stylesheets;
@@ -66,6 +76,8 @@
 
 		<!--put your external script links here-->
 		<script type="text/javascript" src="lib/jquery-2.2.0.js"></script>
+		<script type="text/javascript" src="lib/jquery-ui-1.11.4.custom/external/jquery/jquery.js"></script>
+		<script type="text/javascript" src="lib/jquery-ui-1.11.4.custom/jquery-ui.js"></script>
 		<script type="text/javascript" src="lib/leaflet/leaflet.js"></script>
 		<script type="text/javascript" src="js/main.js"></script>
 		<!--<script type="text/javascript" src="js/tutorials.js"></script>-->

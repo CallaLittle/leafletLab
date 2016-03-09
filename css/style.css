@@ -1,4 +1,7 @@
 /* Stylesheet by Calla Little, 2016 */
+body {
+    background-color: #444;
+}
 
 #map {
 
@@ -6,23 +9,39 @@
 	height: 820px;
 	width: 80%;
 	display: inline-block;
+    border: solid gray;
+    border-width: 3px;
+}
+
+#title{
+    height: 20;
+}
+
+#panel {
+    
+    height: 820px;
+    width: 18%;
+    padding: 0px;
+    display: inline-block;
+    vertical-align: top;
+    background-color: #444;
+    border: solid gray;
+    border-width: 3px;
+    text-align: center;
+    color: #FFF;
 }
 
 #options {
 	position: relative;
 	display: inline-block;
 	vertical-align: top;
+    text-align: center;
 }
 
-
-
-#panel {
-
-	width: 16%;
-	padding: 20px;
-	display: inline-block;
-	vertical-align: top;
+.selectbox {
+    display: inline-block;
 }
+
 
 .leaflet-popup-content-wrapper {
 	background-color: #333;
@@ -33,9 +52,12 @@
 	background-color: #333;
 }
 
-.leaflet-popup-content p {
+.leaflet-popup-content p, h3{
     color: #fff;
+    text-align: center;
 }
+
+
 
 
 .sequence-control-container {
