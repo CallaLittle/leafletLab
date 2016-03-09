@@ -65,11 +65,11 @@ function createPropSymbols(data, years) {
 
 	//prop symbol style
 	var markerStyle = {
-		fillColor: 'purple',
-		color: 'purple',
+		fillColor: '#ffffbf',
+		color: '#ffffbf',
 		weight: 1,
-		opacity: .3,
-		fillOpacity: .3
+		opacity: .2,
+		fillOpacity: .2
 	};
 
 	//convert leaflet markers to circles
@@ -221,7 +221,8 @@ function updatePropSymbols(year, percentArrayYear) {
 
 			//update symbol properties
 			layer.setRadius(radius);
-			layer.setStyle({fillColor: 'purple'})
+			layer.setStyle({fillColor: '#ffffbf', color: '#ffffbf', fillOpacity: .2, opacity: .2});
+			$('.color-legend-control-container').remove();
 
 			//bind appropriate popup
 			var popUp = '<p><b><center>' + props.City + '<br></center> ';
@@ -229,7 +230,7 @@ function updatePropSymbols(year, percentArrayYear) {
 				popUp += '<p>' + year + ':</b> ' + props[year] + '%';
 			}
 			else {
-				popUp += '<p>' + year.substring(3) + ':</b> ' + props[year] + ' people';
+				popUp += '<p>' + year.substring(3) + ':</b> ' + props[year] * (props[percentArrayYear]/100) + ' people';
 			}
 
 			layer.bindPopup(popUp, {
@@ -294,11 +295,11 @@ function calculate(percentYears, popYears) {
 						var popUp = '<p><b><center>' + features.City + '<br></center> ';
 
 						if(difference < 0) {
-							layer.setStyle({fillColor: 'green'});
+							layer.setStyle({fillColor: '#368dce', color: '#368dce', fillOpacity: .5, opacity: .5});
 							popUp += '<p>From ' + fromPerc + ' to ' + toPerc + ': ' + Math.abs(difference) + '% decrease';
 						} 
 						else {
-							layer.setStyle({fillColor: 'orange'});
+							layer.setStyle({fillColor: '#fdae61', color: '#fdae61', fillOpacity: .35, opacity: .35});
 							popUp += '<p>From ' + fromPerc + ' to ' + toPerc + ': ' + Math.abs(difference) + '% increase';
 						};
 
@@ -329,11 +330,11 @@ function calculate(percentYears, popYears) {
 						var popUp = '<p><b><center>' + features.City + '<br></center> ';
 
 						if(difference < 0) {
-							layer.setStyle({fillColor: 'green'});
+							layer.setStyle({fillColor: '#368dce', color: '#368dce', fillOpacity: .5, opacity: .5});
 							popUp += '<p>From ' + fromPop.substring(3) + ' to ' + toPop.substring(3) + ': ' + Math.abs(difference) + ' fewer people';
 						} 
 						else {
-							layer.setStyle({fillColor: 'orange'});
+							layer.setStyle({fillColor: '#fdae61', color: '#fdae61', fillOpacity: .35, opacity: .35});
 							popUp += '<p>From ' + fromPop.substring(3) + ' to ' + toPop.substring(3) + ': ' + Math.abs(difference) + ' more people';
 						};
 
@@ -348,15 +349,51 @@ function calculate(percentYears, popYears) {
 			};
 		});
 		if(dataValueIndex < 1 && fromPerc !== undefined && toPerc !== undefined) {
-			console.log(toPerc);
+
 			updateLegend(fromPerc, toPerc);
+	
+			if (!($('.color-legend-control-container').length)) {
+				createColorLegend();
+			};
+
 		};
 		if(dataValueIndex > 0 && fromPerc !== undefined && fromPop !== undefined && toPop !== undefined ) {
-			// console.log(fromPop);
+
 			updateLegend(fromPerc, toPerc, fromPop, toPop);
+
+			if (!($('.color-legend-control-container').length)) {
+				createColorLegend();
+
+			};
+
 		};
 		
 	});
+};
+
+function createColorLegend() {
+	var LegendControl = L.Control.extend({
+		options: {
+			position: 'bottomright'
+		},
+
+		onAdd: function() {
+			var container = L.DomUtil.create('div', 'color-legend-control-container');
+
+			$(container).append('<div id="colorLegend">Colors ');
+
+			var svg = '<svg id="color-legend" width="250px" height="140px"><circle class="legend-circle" id="orangeColorCircle" fill="#fdae61" fill-opacity=".35" stroke-opacity=".35" stroke="#fdae61" cx="58" cy="60" r="10"/>';
+
+	            svg += '<text id="orangeColorText" fill="white" x="58" y="60">Increase</text>';
+
+
+            $(container).append(svg);
+
+			return container;
+		}
+	});
+
+	map.addControl(new LegendControl());
 };
 
 function createLegend(years) {
@@ -370,14 +407,20 @@ function createLegend(years) {
 
 			$(container).append('<div id="attLegend">Percentage in Poverty ' + years);
 
-			var svg = '<svg id="attribute-legend" width="180px" height="180px">';
+			var svg = '<svg id="attribute-legend" width="250px" height="140px">';
 
-			var circles = ["max", "mean", "min"];
+			var circles = {
+	            max: 20,
+	            mean: 40,
+	            min: 60
+        	};
 
-			for (var i=0; i<circles.length; i++) {
+			for (var circle in circles) {
 
-	            svg += '<circle class="legend-circle" id="' + circles[i] + 
-	            '" fill="#F47821" fill-opacity="0.8" stroke="#000000" cx="90"/>';
+	            svg += '<circle class="legend-circle" id="' + circle + 
+	            '" fill="#F47821" fill-opacity="0" stroke="#FFF" cx="58"/>';
+
+	            svg += '<text id="' + circle + '-text" fill="white"></text>';
 	        };
 
 
@@ -395,6 +438,7 @@ function createLegend(years) {
 function updateLegend(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 
 	var circleValues = {};
+	var percentValues = {};
 
 	if(dataValueIndex < 1 && toPercYear == null) {
 		$('#attLegend').html('Percentage in Poverty ' + fromPercYear);
@@ -403,6 +447,10 @@ function updateLegend(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 	else if(dataValueIndex > 0 && toPopYear == null) {
 		$('#attLegend').html('Population in Poverty ' + fromPopYear.substring(3));
 		circleValues = calcMinMaxMean(fromPercYear, null, fromPopYear, null);
+		dataValueIndex = 0;
+		percentValues = calcMinMaxMean(fromPercYear);
+		dataValueIndex = 1;
+		
 	}
 	else if(dataValueIndex < 1 && toPercYear !== null) {
 		$('#attLegend').html('Change in percentage of population <p> below the poverty line from ' + fromPercYear + ' to ' + toPercYear);
@@ -417,9 +465,28 @@ function updateLegend(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 	for (var key in circleValues) {
 
         $('#'+key).attr({
-            cy: 179 - circleValues[key],
+            cy: 130 - circleValues[key],
             r: circleValues[key]
         });
+
+        $('#'+key+'-text').attr({
+        	x: 65 + circleValues['max'], 
+        	y: 134 - (2 * circleValues[key])
+
+        });
+        if(dataValueIndex < 1 && toPercYear == null) {
+        	$('#'+key+'-text').text(((Math.pow(circleValues[key], 2) * (Math.PI * .6 ))/40).toFixed(2) + " percent");
+		}
+		else if(dataValueIndex > 0 && toPopYear == null) {
+			$('#'+key+'-text').text((((Math.pow(circleValues[key], 2) * (Math.PI * .6 ))/(.002 * (percentValues[key]/100)))*percentValues[key]).toFixed(0) + " people");
+		}
+		else if(dataValueIndex < 1 && toPercYear !== null) {
+			$('#'+key+'-text').text(((Math.pow(circleValues[key], 2) * (Math.PI * .6 ))/80).toFixed(2) + " percent");
+		}
+		else {
+			$('#'+key+'-text').text(((Math.pow(circleValues[key], 2) * (Math.PI * .6 ))/.01).toFixed(0) + " people");
+		};
+        
     };
  };
 
