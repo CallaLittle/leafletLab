@@ -13,10 +13,6 @@ body {
     border-width: 3px;
 }
 
-#title{
-    height: 20;
-}
-
 #panel {
     
     height: 820px;
@@ -38,10 +34,50 @@ body {
     text-align: center;
 }
 
+#title{
+    height: 20;
+}
+
+#title h2 {
+    margin: 10px;
+    margin-bottom: 5px;
+}
+
+#title h4 {
+    margin: 8px;
+    margin-bottom: 35px;
+}
+
+#map-info p {
+    width: 85%;
+    text-align: justify;
+    margin: 26px;
+}
+
+#dropdown p {
+    margin-bottom: 8px;
+}
+
+#filter-menu p {
+    margin-top: 25px;
+    margin-bottom: 8px;
+}
+
 .selectbox {
     display: inline-block;
 }
 
+#reverse {
+    float: left;
+}
+
+#forward {
+    float: right;
+}
+
+.skip {
+    margin: -2px;
+}
 
 .leaflet-popup-content-wrapper {
 	background-color: #333;
@@ -58,10 +94,8 @@ body {
 }
 
 
-
-
 .sequence-control-container {
-    width: 250px;
+    width: 275px;
     height: 15px;
     background-color: #333;
     padding: 10px;

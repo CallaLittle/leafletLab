@@ -21,28 +21,35 @@
 		</div> -->
 		
 		<div id='panel'>
-			<div id="title"><h2>U.S. Poverty Levels</h2></div>
+			<div id="title"><h2>Poverty Levels in U.S. Metropolitan Areas</h2>
+				<h4>2008 - 2014</h4>
+			</div>
+			<div id ='map-info'>
+				<p>This map illustrates how poverty levels have changed in major metropolitian areas from 2008 to 2014. It is possible to look at data that is normalized or the total population in a city that is under the poverty threshold. These variables tell a different story. Some cities may have a high percentage of its population living under the poverty line, but a small population when compared to larger cities (or vice versa). Due to the temporal resolution of this data, it is difficult to see the amount of change from year to year, but by selecting a range of years it is possible to see whether a city's poverty level has improved or worsened through time. The picture looks dire when choosing 2008 as a starting point, but when selecting a later start date we can see that poverty levels are actually improving in many cities. This is a good sign, as it means we are on the right track to reducing poverty. 
+				</p>
+			</div>
+
 			<div id='options'>
 
 				<div id='dropdown'>
-					<p>Select Variable: </p>
+					<p>Select a variable to map: </p>
 					<div >
 						<select id='selector'>
-							<option value='percentage'>% in poverty</option>
-							<option value='population'># in poverty</option>
+							<option value='percentage'>percent below poverty line</option>
+							<option value='population'>population below poverty line</option>
 						</select>
 					</div>
 				</div>
 				<br>
-				<br>
+				<br>OR
 				<br>
 				<div>
 					<div id='filter-menu'>
-						<p>Select Years:</p>
-						<div><p>From              To</p></div>
+						<p>Select a range of years:</p>
+						<div></div>
 							<div>
-								<select class='calculate-selector' id='select-from-year'>
-									<option value= undefined>    </option>
+								<select class='calculate-selector reset' id='select-from-year'>
+									<option value= "">    </option>
 									<option value= 0>2008</option>
 									<option value= 1>2009</option>
 									<option value= 2>2010</option>
@@ -50,10 +57,10 @@
 									<option value= 4>2012</option>
 									<option value= 5>2013</option>
 									<!-- <option value='2014'>2014</option> -->
-								</select>
-								<select class='calculate-selector' id='select-to-year'>
+								</select> to
+								<select class='calculate-selector reset' id='select-to-year'>
 									<!-- <option value='2008'>2008</option> -->
-									<option value= undefined>    </option>
+									<option value= "">    </option>
 									<option value= 1>2009</option>
 									<option value= 2>2010</option>
 									<option value= 3>2011</option>

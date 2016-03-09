@@ -124,10 +124,10 @@ function createSequenceControls(perYears, popYears) {
 
 			var container = L.DomUtil.create('div', 'sequence-control-container');
 
-			$(container).append('<input class="range-slider" type="range">' );
+			$(container).append('<input class="range-slider reset" type="range">' );
 
-			$(container).append('<button class="skip" id="reverse">Reverse');
-			$(container).append('<button class="skip" id="forward"><img src="img/skip.png" height="8">');
+			$(container).append('<button class="skip reset" id="reverse">Reverse');
+			$(container).append('<button class="skip reset" id="forward">Skip');
 
 			$(container).on('mousedown dblclick', function(e) {
 				L.DomEvent.stopPropagation(e);
@@ -511,7 +511,8 @@ function calcMinMaxMean(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 			else if(dataValueIndex < 1 && toPercYear !== null) {
 				var difference = layer.feature.properties[toPercYear] - layer.feature.properties[fromPercYear];
 				attributeValue = Math.abs(difference);
-				radius = calcDifferenceRadius(difference);
+				radius = calcDifferenceRadius(attributeValue);
+
 			}
 			else if(dataValueIndex > 0 && toPopYear == null) {
 				attributeValue = Number((layer.feature.properties[fromPercYear]/100) * layer.feature.properties[fromPopYear]);
@@ -550,7 +551,13 @@ function calcMinMaxMean(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 };
 
 
-
+function resetYears() {
+	$('.reset').click(function() {
+		$('select-from-year').val("");
+		$('select-to-year').val("");
+	});
+	
+};
 
 
 //get the data for the map
