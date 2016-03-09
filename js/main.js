@@ -51,7 +51,10 @@ function calcRadius(atValue, percentage) {
 	else {
 		scaleFactor = 40;
 	};
-	
+
+	if(percentage == 100) {
+		return Math.sqrt((atValue * scaleFactor)/(Math.PI * .6 ));
+	}
 	return Math.sqrt((atValue * percentage * scaleFactor)/(Math.PI * .6 ));
 	//return 1.0083 * Math.pow((atValue * percentage)/7.1,.5716) * 35.2; 
 };
@@ -205,11 +208,10 @@ function updatePropSymbols(year, percentArrayYear) {
 			var props = layer.feature.properties;
 			//console.log(year);
 			var radius;
-
 			//pass percentage array if population is being mapped
 			if(dataValueIndex > 0) {
 				radius = calcRadius(props[year], props[percentArrayYear]);
-				updateLegend(null, null, year, null);
+				updateLegend(percentArrayYear, null, year, null);
 				
 			}
 			else {
@@ -271,13 +273,11 @@ function calculate(percentYears, popYears) {
 
 			//check which attribute is being mapped
 			if(dataValueIndex < 1) {
-				
+
 				map.eachLayer(function(layer) {
 
 					//iterate through each feature
 					if(layer.feature && layer.feature.properties[fromPerc] && layer.feature.properties[toPerc]) {
-
-						updateLegend(fromPerc, toPerc, null, null);
 
 						var features = layer.feature.properties;
 
@@ -317,14 +317,14 @@ function calculate(percentYears, popYears) {
 				map.eachLayer(function(layer) {
 					if(layer.feature && layer.feature.properties[fromPop] && layer.feature.properties[toPop]) {
 
-						updateLegend(null, null, fromPop, toPop);
-
 						var features = layer.feature.properties;
 
 						//calculate the change between years
 						var difference = (features[toPop] * (features[toPerc]/100)) - ( features[fromPop] * (features[fromPerc]/100));
 
 						var calculatedRadius = calcDifferenceRadius(Math.abs(difference));
+						console.log(calculatedRadius);
+						updateLegend(toPerc, fromPerc, fromPop, toPop, calculatedRadius);
 						
 						//apply appropriate symbol properties
 						layer.setRadius(calculatedRadius);
@@ -350,6 +350,10 @@ function calculate(percentYears, popYears) {
 				});
 			};
 		});
+		if(dataValueIndex < 1 && fromPerc !== 'undefined' && toPerc !== 'undefined') {
+			console.log('boom');
+		};
+		
 	});
 };
 
@@ -374,6 +378,7 @@ function createLegend(years) {
 	            '" fill="#F47821" fill-opacity="0.8" stroke="#000000" cx="90"/>';
 	        };
 
+
             $(container).append(svg);
 
 			return container;
@@ -381,59 +386,102 @@ function createLegend(years) {
 	});
 
 	map.addControl(new LegendControl());
+
+	updateLegend(years);
 };
 
-function updateLegend(fromPercYear, toPercYear, fromPopYear, toPopYear) {
+function updateLegend(fromPercYear, toPercYear, fromPopYear, toPopYear, calculatedRadius) {
+
+	var circleValues = {};
 
 	if(dataValueIndex < 1 && toPercYear == null) {
 		$('#attLegend').html('Percentage in Poverty ' + fromPercYear);
+		circleValues = calcMinMaxMean(fromPercYear);
 	}
 	else if(dataValueIndex > 0 && toPopYear == null) {
 		$('#attLegend').html('Population in Poverty ' + fromPopYear.substring(3));
+		circleValues = calcMinMaxMean(fromPercYear, null, fromPopYear, null);
 	}
 	else if(dataValueIndex < 1 && toPercYear !== null) {
 		$('#attLegend').html('Change in percentage of population <p> below the poverty line from ' + fromPercYear + ' to ' + toPercYear);
+		circleValues = calcMinMaxMean(fromPercYear, toPercYear, null, null);
 	}
 	else {
 		$('#attLegend').html('Change in population below the poverty line <p> from ' + fromPopYear.substring(3) + ' to ' + toPopYear.substring(3));
+		circleValues = calcMinMaxMean(fromPercYear, toPercYear, fromPopYear, toPopYear, calculatedRadius);
 	};
+
+	console.log(circleValues);
+
+	for (var key in circleValues) {
+
+        $('#'+key).attr({
+            cy: 179 - circleValues[key],
+            r: circleValues[key]
+        });
+    };
+ };
+
+function calcMinMaxMean(fromPercYear, toPercYear, fromPopYear, toPopYear, calculatedRadius) {
 
 	var min = Infinity, max = -Infinity;
 
+	var attributeValue = 0;
+	var radius = 0;
+
 	map.eachLayer(function(layer) {
 		if(layer.feature) {
-			var attributeValue = Number(layer.feature.properties[fromPercYear]);
+			if(dataValueIndex < 1 && toPercYear == null) {
+				attributeValue = Number(layer.feature.properties[fromPercYear]);
+				radius = calcRadius(attributeValue, 100)
+			}
+			else if(dataValueIndex < 1 && toPercYear !== null) {
+				var difference = layer.feature.properties[toPercYear] - layer.feature.properties[fromPercYear];
+				attributeValue = Math.abs(difference);
+				radius = calcDifferenceRadius(difference);
+			}
+			else if(dataValueIndex > 0 && toPopYear == null) {
+				attributeValue = Number((layer.feature.properties[fromPercYear]/100) * layer.feature.properties[fromPopYear]);
+				radius = calcRadius(attributeValue, 100)
+			}
+			else {
+				// var difference = ((layer.feature.properties[toPercYear]/100) * layer.feature.properties[toPopYear]) - ((layer.feature.properties[fromPercYear]/100) * layer.feature.properties[fromPopYear]);
+				// attributeValue = Math.abs(difference);
+				
+				// radius = calcDifferenceRadius(difference);
+				//console.log(radius);
+				radius = calculatedRadius;
+				// console.log(radius);
+			};
+			
+			//console.log(attributeValue);
 
-			if(attributeValue < min) {
-				min = attributeValue;
+			if(radius < min) {
+				min = radius;
 			};
 
-			if(attributeValue > max) {
-				max = attributeValue;
+			if(radius > max) {
+				max = radius;
 			};
 
-			var mean = (max + min) / 2;
+			
 
 		};
 	});
 
-	var circleValues = {
+	var mean = (max + min) / 2;
+
+
+	return circleValues = {
 		max: max,
 		mean: mean,
 		min: min
 	};
+};
 
-	for (var key in circleValues){
-		console.log(circleValues[key])
 
-        var radius = calcRadius(circleValues[key]);
 
-        $('#'+key).attr({
-            cy: 179 - radius,
-            r: radius
-        });
-    };
- };
+
 
 //get the data for the map
 function getData() {
