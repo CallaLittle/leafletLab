@@ -7,10 +7,11 @@ var map = L.map('map', {minZoom: 5}).setView([37.5, -96.75], 5); //map intializa
 
 //tileset
 var CartoDB_DarkMatter = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
-	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a><a href="http://www.census.gov"> | US Census Bureau</a>',
 	subdomains: 'abcd',
 	maxZoom: 19
 }).addTo(map);
+
 
 
 //parse percentage index array
@@ -166,6 +167,8 @@ function createSequenceControls(perYears, popYears) {
 			index = index < 0 ? 6 : index;
 		};
 
+		//resetYears();
+
 		//update the slider and the prop symbols
 		$('.range-slider').val(index);
 		//console.log(index);
@@ -177,6 +180,8 @@ function createSequenceControls(perYears, popYears) {
 	$('.range-slider').on('input', function() {
 
 		var index = $(this).val();
+
+		//resetYears();
 
 		//pass the current attribute index array with the year index
 		updatePropSymbols(dataArray[dataValueIndex][index], dataArray[0][index]);
@@ -348,30 +353,55 @@ function calculate(percentYears, popYears) {
 	
 				});
 			};
+			//update the proportional symbol legend for the calculated differences
+			//create the color legend if it hasn't been created yet
+			if(dataValueIndex < 1 && fromPerc !== undefined && toPerc !== undefined) {
+
+				updateLegend(fromPerc, toPerc);
+		
+				if (!($('.color-legend-control-container').length)) {
+					createColorLegend();
+				};
+
+			};
+			if(dataValueIndex > 0 && fromPerc !== undefined && fromPop !== undefined && toPop !== undefined ) {
+
+				updateLegend(fromPerc, toPerc, fromPop, toPop);
+
+				if (!($('.color-legend-control-container').length)) {
+					createColorLegend();
+
+				};
+
+			};
 		});
-		if(dataValueIndex < 1 && fromPerc !== undefined && toPerc !== undefined) {
 
-			updateLegend(fromPerc, toPerc);
+		//update the proportional symbol legend for the calculated differences
+		//create the color legend if it hasn't been created yet
+		// if(dataValueIndex < 1 && fromPerc !== undefined && toPerc !== undefined) {
+
+		// 	updateLegend(fromPerc, toPerc);
 	
-			if (!($('.color-legend-control-container').length)) {
-				createColorLegend();
-			};
+		// 	if (!($('.color-legend-control-container').length)) {
+		// 		createColorLegend();
+		// 	};
 
-		};
-		if(dataValueIndex > 0 && fromPerc !== undefined && fromPop !== undefined && toPop !== undefined ) {
+		// };
+		// if(dataValueIndex > 0 && fromPerc !== undefined && fromPop !== undefined && toPop !== undefined ) {
 
-			updateLegend(fromPerc, toPerc, fromPop, toPop);
+		// 	updateLegend(fromPerc, toPerc, fromPop, toPop);
 
-			if (!($('.color-legend-control-container').length)) {
-				createColorLegend();
+		// 	if (!($('.color-legend-control-container').length)) {
+		// 		createColorLegend();
 
-			};
+		// 	};
 
-		};
+		// };
 		
 	});
 };
 
+//create the color legend
 function createColorLegend() {
 	var LegendControl = L.Control.extend({
 		options: {
@@ -401,6 +431,7 @@ function createColorLegend() {
 	map.addControl(new LegendControl());
 };
 
+//create the proportional symbol legend
 function createLegend(years) {
 	var LegendControl = L.Control.extend({
 		options: {
@@ -410,8 +441,10 @@ function createLegend(years) {
 		onAdd: function() {
 			var container = L.DomUtil.create('div', 'legend-control-container');
 
+			//title of the legend
 			$(container).append('<div id="attLegend">Percentage of people below the poverty <p> line in ' + years);
 
+			//create the svg to hold the legend circles
 			var svg = '<svg id="attribute-legend" width="250px" height="140px">';
 
 			var circles = {
@@ -420,6 +453,8 @@ function createLegend(years) {
 	            min: 60
         	};
 
+        	//give each circle an id 
+        	//create text to sit next to the legend
 			for (var circle in circles) {
 
 	            svg += '<circle class="legend-circle" id="' + circle + 
@@ -435,16 +470,22 @@ function createLegend(years) {
 		}
 	});
 
+	//add the legend to the map
 	map.addControl(new LegendControl());
 
+	//draw the symbols
 	updateLegend(years);
 };
 
+//update the proportional symbol legend
 function updateLegend(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 
-	var circleValues = {};
-	var percentValues = {};
+	var circleValues = {}; //the radius
+	var percentValues = {}; //the percentage to multiple population by
 
+	//determine which attribute is being used
+	//apply appropriate legend title
+	//find the min max and mean
 	if(dataValueIndex < 1 && toPercYear == null) {
 		$('#attLegend').html('Percentage of population below the poverty <p> line in ' + fromPercYear);
 		circleValues = calcMinMaxMean(fromPercYear);
@@ -467,6 +508,7 @@ function updateLegend(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 	};
 
 
+	//attach the radius to each symbol
 	for (var key in circleValues) {
 
         $('#'+key).attr({
@@ -479,6 +521,8 @@ function updateLegend(fromPercYear, toPercYear, fromPopYear, toPopYear) {
         	y: 134 - (2 * circleValues[key])
 
         });
+
+        //calculate what the original data value was
         if(dataValueIndex < 1 && toPercYear == null) {
         	$('#'+key+'-text').text(((Math.pow(circleValues[key], 2) * (Math.PI * .6 ))/40).toFixed(2) + " percent");
 		}
@@ -495,6 +539,7 @@ function updateLegend(fromPercYear, toPercYear, fromPopYear, toPopYear) {
     };
  };
 
+//calculate the min max and mean radius depending on data set
 function calcMinMaxMean(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 
 	var min = Infinity, max = -Infinity;
@@ -502,6 +547,8 @@ function calcMinMaxMean(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 	var attributeValue = 0;
 	var radius = 0;
 
+	//calculate each radius for the current dataset
+	//determine if it is a new min or max
 	map.eachLayer(function(layer) {
 		if(layer.feature) {
 			if(dataValueIndex < 1 && toPercYear == null) {
@@ -526,7 +573,6 @@ function calcMinMaxMean(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 
 			};
 			
-			//console.log(attributeValue);
 
 			if(radius < min) {
 				min = radius;
@@ -540,9 +586,10 @@ function calcMinMaxMean(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 		};
 	});
 
+	//calculate mean
 	var mean = (max + min) / 2;
 
-
+	//return the calculated radius
 	return circleValues = {
 		max: max,
 		mean: mean,
@@ -551,13 +598,17 @@ function calcMinMaxMean(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 };
 
 
-function resetYears() {
-	$('.reset').click(function() {
-		$('select-from-year').val("");
-		$('select-to-year').val("");
-	});
+// function resetYears() {
+// 	$('.reset').change(function(){
+//    	 	$('select-from-year').prop('selectedIndex',0);
+//    	 });
+
+// 	// $('#name').change(function(){
+//  //    	$('#name2').prop('selectedIndex',0);
+// 	// });
+		
 	
-};
+//};
 
 
 //get the data for the map
