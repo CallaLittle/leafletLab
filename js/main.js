@@ -57,7 +57,6 @@ function calcRadius(atValue, percentage) {
 		return Math.sqrt((atValue * scaleFactor)/(Math.PI * .6 ));
 	}
 	return Math.sqrt((atValue * percentage * scaleFactor)/(Math.PI * .6 ));
-	//return 1.0083 * Math.pow((atValue * percentage)/7.1,.5716) * 35.2; 
 };
 
 
@@ -167,11 +166,10 @@ function createSequenceControls(perYears, popYears) {
 			index = index < 0 ? 6 : index;
 		};
 
-		//resetYears();
 
 		//update the slider and the prop symbols
 		$('.range-slider').val(index);
-		//console.log(index);
+
 		//pass the current attribute index array with the year index
 		updatePropSymbols(dataArray[dataValueIndex][index], dataArray[0][index]);
 	});
@@ -181,7 +179,6 @@ function createSequenceControls(perYears, popYears) {
 
 		var index = $(this).val();
 
-		//resetYears();
 
 		//pass the current attribute index array with the year index
 		updatePropSymbols(dataArray[dataValueIndex][index], dataArray[0][index]);
@@ -596,19 +593,6 @@ function calcMinMaxMean(fromPercYear, toPercYear, fromPopYear, toPopYear) {
 		min: min
 	};
 };
-
-
-// function resetYears() {
-// 	$('.reset').change(function(){
-//    	 	$('select-from-year').prop('selectedIndex',0);
-//    	 });
-
-// 	// $('#name').change(function(){
-//  //    	$('#name2').prop('selectedIndex',0);
-// 	// });
-		
-	
-//};
 
 
 //get the data for the map
